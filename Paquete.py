@@ -1,8 +1,8 @@
 class Paquete:
-    def __init__(self, identificador, peso, ganancia):
-        self.identificador = identificador
-        self.peso = peso
+    def __init__(self, tipo, espacio, ganancia):
+        self.tipo = tipo
+        self.espacio = espacio
         self.ganancia = ganancia
 
     def __repr__(self):
-        return repr((self.identificador, self.peso, self.ganancia))
+        return repr((self.tipo, self.espacio, self.ganancia))
