@@ -1,10 +1,10 @@
-from turtle import st
+import math
 from ventana_ui import *
 
 from Paquete import Paquete
 from Individuo import Individuo
 
-from random import randint, random
+from random import Random, randint, random
 import random
 
 
@@ -29,6 +29,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.lista_individuos = []
         self.cant_max_paquetes = 0
         self.pobla_init = 0
+        self.max_contenedor = 0
+        self.num_div = 0
+        self.parejas = []
+        self.puntos_cruza = []
+        self.porsentaje_descendencia = 0
         # Botones
         self.ingresar.clicked.connect(self.algoritmo)
         self.botton_ingresar_paquetes.clicked.connect(self.ingresar_paquete)
@@ -50,9 +55,72 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         for i in range(self.pobla_init):
             lista = self.lista_paquetes.copy()
             random.shuffle(lista)
-            self.lista_individuos.append(lista)
-        
+            self.lista_individuos.append(Individuo(lista))
+
         print(self.lista_individuos)
+
+    def cal_espacio(self):
+        for i in range(len(self.lista_individuos)):
+            suma_espacio = 0
+            suma_ganancia = 0
+            for y in range(len(self.lista_individuos[i].lista_paquetes)):
+                indiv = self.lista_individuos[i].lista_paquetes[i]
+                suma_espacio += indiv.espacio
+                suma_ganancia += indiv.ganancia
+                if suma_espacio < self.max_contenedor:
+                    self.lista_individuos[i].peso_total = suma_espacio
+                    self.lista_individuos[i].ganancia_total = suma_ganancia
+                    self.lista_individuos[i].posicion_valido = y
+        print(self.lista_individuos)
+
+    def cal_div(self):
+        self.num_div = len(self.lista_individuos)
+        self.num_div = int(self.num_div/2)
+        print("Numero de division: ", self.num_div)
+
+    def crear_parejas(self):
+        for i in range(self.num_div):
+            for y in range(i+1, len(self.lista_individuos)):
+                print("PAREJAS: i ", i, " : y ", y)
+                self.parejas.append(
+                    [self.lista_individuos[i], self.lista_individuos[y]])
+        print("Lista parejas", self.parejas)
+
+    def get_hijo(self, puntos_cruza, padre1, padre2):
+        hijo = []
+        for i in range(len(puntos_cruza)):
+            for y in range(puntos_cruza[i]):
+                if y < puntos_cruza[i]:
+                    hijo.append(padre1.lista_paquetes[y])
+                else:
+                    hijo.append(padre2.lista_paquetes[y])
+        return hijo
+
+    def gen_cruza(self):
+        puntos_cruza = random.sample(
+            range(len(self.lista_paquetes)-1), k=randint(1, 5))
+        puntos_cruza = sorted(puntos_cruza)
+        print("Puntos de cruza: ", puntos_cruza)
+        hijos = []
+        for i in range(len(self.parejas)):
+            print("Hijo generado")
+            pareja = self.parejas[i]
+            padre1 = pareja[0]
+            padre2 = pareja[1]
+
+            hijo = self.get_hijo(puntos_cruza,padre1, padre2)
+            print("Hijo 1: ", hijo)
+            # hijos.append(Individuo(hijo))
+            # hijo = get_hijo(puntos_cruza, padre2, padre1)
+            # print("Hijo 1: ", hijo)
+            # hijos.append(Individuo(hijo))
+
+    def cal_prob(self,pors):
+        probabilidad = random()
+        if probabilidad < pors:
+            return True
+        else:
+            return False
 
     def algoritmo(self):
         print("Ingreso a metodo analizar algoritmo")
@@ -60,9 +128,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.gen__list_paquetes()
         self.conver_list_paquetes()
         self.pobla_init = int(self.poblacion_inicial.text())
-        print(self.poblacion_inicial.text())
+        self.max_contenedor = int(self.tam_contenedor_max.text())
+        self.porsentaje_descendencia = float(self.pors_desc.text())
+        print(self.pobla_init)
         self.gen_individuos()
         print(self.lista_paquetes)
+        self.cal_espacio()
+        self.lista_individuos = sorted(
+            self.lista_individuos, key=lambda genoma: genoma.peso_total, reverse=True)
+        self.cal_div()
+        print("Lista individuos ordenada", self.lista_individuos)
+        self.crear_parejas()
+        self.gen_cruza()
 
         # print(self.pors_desc.text())
         # print(self.pors_prob_ind.text())
