@@ -179,7 +179,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.lista_individuos = self.cal_espacio(self.lista_individuos)
 
         self.lista_individuos = sorted(
-            self.lista_individuos, key=lambda genoma: genoma.peso_total, reverse=True)
+            self.lista_individuos, key=lambda genoma: genoma.ganancia_total, reverse=True)
         self.cal_div()
         self.calculo_promedio(self.lista_individuos)
         self.maximo.append(self.lista_individuos[0].ganancia_total)
@@ -188,6 +188,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         print("Lista individuos ordenada", self.lista_individuos)
         for i in range(int(self.num_gen.text())):
+            self.lista_individuos = sorted(
+                self.lista_individuos, key=lambda genoma: genoma.peso_total, reverse=True)
             print("Generacion : ", i)
             parejas = self.crear_parejas()
             hijos = self.generar_cruza(parejas)
@@ -213,8 +215,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             print("Lista de poblacion despues de poda:")
             print(self.lista_individuos)
             self.generaciones.append(self.lista_individuos.copy())
-            self.lista_individuos = sorted(
-                self.lista_individuos, key=lambda genoma: genoma.peso_total, reverse=True)
+            
 
         self.tabla_historial()
         self.tabla_generaciones()
