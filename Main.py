@@ -11,6 +11,8 @@ import random
 
 from matplotlib import pyplot as plt
 
+from video import create_video
+
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self, *args, **kwargs):
@@ -43,6 +45,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # Botones
         self.ingresar.clicked.connect(self.algoritmo)
         self.botton_ingresar_paquetes.clicked.connect(self.ingresar_paquete)
+        self.generar_video.clicked.connect(self.genera_video_botton)
 
     def gen_individuos(self):
         print("Lista de paquetes: ", self.lista_paquetes)
@@ -180,7 +183,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.cal_div()
         self.calculo_promedio(self.lista_individuos)
         self.maximo.append(self.lista_individuos[0].ganancia_total)
-        self.minimo.append(self.lista_individuos[len(self.lista_individuos)-1].ganancia_total)
+        self.minimo.append(self.lista_individuos[len(
+            self.lista_individuos)-1].ganancia_total)
 
         print("Lista individuos ordenada", self.lista_individuos)
         for i in range(int(self.num_gen.text())):
@@ -198,20 +202,50 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.lista_individuos.append(hijos[y])
 
             self.lista_individuos = sorted(
-                self.lista_individuos, key=lambda genoma: genoma.peso_total, reverse=True)
+                self.lista_individuos, key=lambda genoma: genoma.ganancia_total, reverse=True)
             print("Lista de poblacion antes de poda:")
             print(self.lista_individuos)
             self.calculo_promedio(self.lista_individuos)
             self.maximo.append(self.lista_individuos[0].ganancia_total)
-            self.minimo.append(self.lista_individuos[len(self.lista_individuos)-1].ganancia_total)
+            self.minimo.append(self.lista_individuos[len(
+                self.lista_individuos)-1].ganancia_total)
             self.poda_mejores()
             print("Lista de poblacion despues de poda:")
             print(self.lista_individuos)
             self.generaciones.append(self.lista_individuos.copy())
-            
+            self.lista_individuos = sorted(
+                self.lista_individuos, key=lambda genoma: genoma.peso_total, reverse=True)
+
         self.tabla_historial()
-    
-    
+        self.tabla_generaciones()
+
+    def tabla_generaciones(self):
+        fig2 = plt.figure(figsize=(10, 5))
+        fig2.tight_layout()
+        plt.style.use('_mpl-gallery')
+        plt.subplots_adjust(left=0.06, right=0.95, bottom=0.06, top=0.95)
+
+        for x in range(len(self.generaciones)):
+            aptitudes = self.generaciones[x]
+            aptitud_x = []
+            aptitud_generacion = []
+            for i in range(len(aptitudes)):
+                aptitud_x.append(i+1)
+                aptitud_generacion.append(aptitudes[i].ganancia_total)
+            ax_2 = plt.subplot(1, 1, 1)
+            ax_2.barh(aptitud_x, aptitud_generacion)
+            ax_2.set_xlabel("Ganancia Total")
+            ax_2.set_ylabel("Paquetes")
+            ax_2.set_title("Generacion "+str(x+1) + "°")
+            num_gen = x + 1
+            if num_gen < 10:
+                name = f'0{num_gen}'
+            elif num_gen >= 10 and num_gen < 100:
+                name = f'{x+1}'
+            elif num_gen >= 100 and num_gen < 1000:
+                name = f'c_{num_gen}'
+            plt.savefig(f'imgs/{name}.png')
+
     def tabla_historial(self):
         x = []
         fig = plt.figure(figsize=(10, 5))
@@ -224,6 +258,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         ax.plot(x, self.promedio, label='Caso Promedio')
         ax.plot(x, self.minimo, label='Caso Mínimo')
         ax.legend(loc='upper right')
+        plt.savefig(f'imgs/historico.png')
         plt.show()
 
     def ingresar_paquete(self):
@@ -247,7 +282,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         print(self.lista_tipo_paquetes)
         self.cant_paquetes_label.setText(
             "Tipos Paquetes ingresados : " + str(len(self.lista_tipo_paquetes)))
-
+    def genera_video_botton(self):
+        create_video()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
